@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>TrustFlow — Shaffof ish, adolatli davlat</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+    body { font-family: 'Inter', sans-serif; background: #f8fafc; -webkit-font-smoothing: antialiased; }
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(18px) scale(0.98); }
+      to   { opacity: 1; transform: translateY(0)  scale(1);    }
+    }
+    @keyframes fadeIn { from { opacity:0 } to { opacity:1 } }
+    ::-webkit-scrollbar       { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: #f1f5f9; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+    input:focus, textarea:focus {
+      border-color: #0f766e !important;
+      box-shadow: 0 0 0 3px rgba(15,118,110,0.12) !important;
+    }
+    button { font-family: 'Inter', sans-serif; }
+    /* Tweaks panel */
+    #tweaks-panel {
+      position: fixed; bottom: 24px; right: 24px; z-index: 3000;
+      width: 300px; background: #fff; border-radius: 16px;
+      border: 1.5px solid #e2e8f0;
+      box-shadow: 0 16px 48px rgba(15,23,42,0.18);
+      font-family: 'Inter', sans-serif;
+      overflow: hidden; display: none;
+      animation: slideUp .22s ease;
+    }
+    #tweaks-panel.visible { display: block; }
+    .tw-head {
+      padding: 14px 18px; background: #0f766e; color: #fff;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .tw-head span { font-size: 13px; font-weight: 700; letter-spacing: .02em; }
+    .tw-head button {
+      background: rgba(255,255,255,0.15); border: none; color: #fff;
+      width: 24px; height: 24px; border-radius: 6px; cursor: pointer;
+      font-size: 14px; display: flex; align-items: center; justify-content: center;
+    }
+    .tw-body { padding: 16px 18px; display: flex; flex-direction: column; gap: 14px; }
+    .tw-row { display: flex; flex-direction: column; gap: 6px; }
+    .tw-label { font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: .05em; }
+    .tw-chips { display: flex; gap: 6px; flex-wrap: wrap; }
+    .tw-chip {
+      padding: 5px 12px; border-radius: 7px; font-size: 12px; font-weight: 500;
+      border: 1.5px solid #e2e8f0; background: #f8fafc; color: #334155;
+      cursor: pointer; transition: all .14s;
+    }
+    .tw-chip.active { border-color: #0f766e; background: #f0fdfa; color: #0f766e; font-weight: 700; }
+  </style>
+</head>
+<body>
+<div id="root"></div>
+
+<!-- Tweaks panel (plain HTML, outside React) -->
+<div id="tweaks-panel">
+  <div class="tw-head">
+    <span>⚙ Tweaks</span>
+    <button id="tw-close">✕</button>
+  </div>
+  <div class="tw-body">
+    <div class="tw-row">
+      <div class="tw-label">Sahifa [Page]</div>
+      <div class="tw-chips" id="tw-page">
+        <div class="tw-chip active" data-val="landing">Bosh sahifa</div>
+        <div class="tw-chip" data-val="jobs">Vakansiyalar</div>
+        <div class="tw-chip" data-val="dashboard">Kabinet</div>
+        <div class="tw-chip" data-val="applications">Arizalarim</div>
+        <div class="tw-chip" data-val="community">Jamiyat</div>
+        <div class="tw-chip" data-val="rewards">Mukofotlar</div>
+        <div class="tw-chip" data-val="gov">Nazorat</div>
+      </div>
+    </div>
+    <div class="tw-row">
+      <div class="tw-label">Modal [Modal]</div>
+      <div class="tw-chips" id="tw-modal">
+        <div class="tw-chip" data-val="report">Shikoyat modali</div>
+        <div class="tw-chip" data-val="emergency">Favqulodda hisobot</div>
+        <div class="tw-chip" data-val="auth-jobseeker">Auth: Ish qidiruvchi</div>
+        <div class="tw-chip" data-val="auth-company">Auth: Kompaniya</div>
+        <div class="tw-chip" data-val="auth-gov">Auth: Davlat</div>
+      </div>
+    </div>
+    <div class="tw-row">
+      <div class="tw-label">Rang sxemasi [Accent]</div>
+      <div class="tw-chips" id="tw-accent">
+        <div class="tw-chip active" data-val="teal">Teal (asl)</div>
+        <div class="tw-chip" data-val="navy">Navy</div>
+        <div class="tw-chip" data-val="slate">Slate</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="text/babel" src="components/Shared.jsx"></script>
+<script type="text/babel" src="components/Auth.jsx"></script>
+<script type="text/babel" src="components/EmergencyReport.jsx"></script>
+<script type="text/babel" src="components/Landing.jsx"></script>
+<script type="text/babel" src="components/JobListings.jsx"></script>
+<script type="text/babel" src="components/Dashboard.jsx"></script>
+<script type="text/babel" src="components/Applications.jsx"></script>
+<script type="text/babel" src="components/Community.jsx"></script>
+<script type="text/babel" src="components/Rewards.jsx"></script>
+<script type="text/babel" src="components/Profile.jsx"></script>
+<script type="text/babel" src="components/CompanyPanel.jsx"></script>
+<script type="text/babel" src="components/Pricing.jsx"></script>
+<script type="text/babel" src="components/FlaggedCompany.jsx"></script>
+<script type="text/babel" src="components/GovDashboard.jsx"></script>
+
+<script type="text/babel">
+  // ── App root ──────────────────────────────────────────────────────────
+  function App() {
+    const [page, setPage]     = React.useState('landing');
+    const [report, setReport] = React.useState(false);
+    const [emergency, setEmergency] = React.useState(false);
+    const [auth, setAuth]     = React.useState(null); // null, 'jobseeker', 'company', 'gov'
+
+    // Expose navigate so tweaks panel can drive it
+    React.useEffect(() => {
+      window.__tfNavigate    = setPage;
+      window.__tfShowReport  = () => setReport(true);
+      window.__tfShowEmergency = () => setEmergency(true);
+      window.__tfShowAuth    = (type) => setAuth(type);
+    }, []);
+
+    // Sync tweaks page chips when page changes programmatically
+    React.useEffect(() => {
+      document.querySelectorAll('#tw-page .tw-chip').forEach(c => {
+        c.classList.toggle('active', c.dataset.val === page);
+      });
+    }, [page]);
+
+    return (
+      <div>
+        <Nav currentPage={page} onNavigate={setPage} onReport={() => setReport(true)}/>
+        <div style={{ animation: 'fadeIn .18s ease' }} key={page}>
+          {page === 'landing'    && <LandingPage    onNavigate={setPage} onReport={() => setReport(true)}/>}
+          {page === 'jobs'       && <JobListingsPage onReport={() => setReport(true)}/>}
+          {page === 'dashboard'  && <DashboardPage  onReport={() => setReport(true)}/>}
+          {page === 'applications' && <ApplicationsPage onReport={() => setReport(true)}/>}
+          {page === 'community'  && <CommunityPage/>}
+          {page === 'rewards'    && <RewardsPage/>}
+          {page === 'gov'        && <GovDashboardPage/>}
+        </div>
+        {report && <ReportModal onClose={() => setReport(false)}/>}
+        {emergency && <EmergencyReportModal onClose={() => setEmergency(false)}/>}
+        {auth === 'jobseeker' && <JobSeekerAuth onClose={() => setAuth(null)} onSuccess={() => { setAuth(null); setPage('dashboard'); }}/>}
+        {auth === 'company' && <CompanyAuth onClose={() => setAuth(null)}/>}
+        {auth === 'gov' && <GovAuth onClose={() => setAuth(null)} onSuccess={() => { setAuth(null); setPage('gov'); }}/>}
+      </div>
+    );
+  }
+
+  ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+
+<script>
+  // ── Tweaks panel wiring ───────────────────────────────────────────────
+  const panel = document.getElementById('tweaks-panel');
+
+  // Host toggle protocol
+  window.addEventListener('message', e => {
+    if (e.data?.type === '__activate_edit_mode')   panel.classList.add('visible');
+    if (e.data?.type === '__deactivate_edit_mode') panel.classList.remove('visible');
+  });
+  window.parent.postMessage({ type: '__edit_mode_available' }, '*');
+
+  // Close button
+  document.getElementById('tw-close').addEventListener('click', () => {
+    panel.classList.remove('visible');
+    window.parent.postMessage({ type: '__edit_mode_dismissed' }, '*');
+  });
+
+  // Page chips
+  document.getElementById('tw-page').addEventListener('click', e => {
+    const chip = e.target.closest('.tw-chip');
+    if (!chip) return;
+    document.querySelectorAll('#tw-page .tw-chip').forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+    window.__tfNavigate && window.__tfNavigate(chip.dataset.val);
+  });
+
+  // Modal chip
+  document.getElementById('tw-modal').addEventListener('click', e => {
+    const chip = e.target.closest('.tw-chip');
+    if (!chip) return;
+    const val = chip.dataset.val;
+    if (val === 'report') window.__tfShowReport && window.__tfShowReport();
+    if (val === 'emergency') window.__tfShowEmergency && window.__tfShowEmergency();
+    if (val === 'auth-jobseeker') window.__tfShowAuth && window.__tfShowAuth('jobseeker');
+    if (val === 'auth-company') window.__tfShowAuth && window.__tfShowAuth('company');
+    if (val === 'auth-gov') window.__tfShowAuth && window.__tfShowAuth('gov');
+  });
+
+  // Accent chips (CSS variable swap)
+  const accents = {
+    teal:  { '--ac': '#0f766e', '--ac-light': '#14b8a6', '--ac-dark': '#065f46' },
+    navy:  { '--ac': '#1e3a8a', '--ac-light': '#3b82f6', '--ac-dark': '#1e2a5e' },
+    slate: { '--ac': '#475569', '--ac-light': '#94a3b8', '--ac-dark': '#1e293b' },
+  };
+  document.getElementById('tw-accent').addEventListener('click', e => {
+    const chip = e.target.closest('.tw-chip');
+    if (!chip) return;
+    document.querySelectorAll('#tw-accent .tw-chip').forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+    const vals = accents[chip.dataset.val];
+    if (vals) Object.entries(vals).forEach(([k,v]) => document.documentElement.style.setProperty(k, v));
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir -p /d/Work/trustflow_design)",
+      "Bash(tar -xzf /c/Users/serio/.claude/projects/d--Work/fbfc64bf-34a0-41dc-ac04-4e76062a99e2/tool-results/webfetch-1777103249168-igukr6.bin)"
+    ]
+  }
+}
