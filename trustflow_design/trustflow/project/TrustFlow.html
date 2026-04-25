@@ -88,11 +88,128 @@
         box-shadow: 0 16px 48px rgba(15, 23, 42, 0.18);
         font-family: "Inter", sans-serif;
         overflow: hidden;
-        /* display: none; */
+        display: none;
         animation: slideUp 0.22s ease;
       }
       #tweaks-panel.visible {
         display: block;
+      }
+      /* Floating tweaks button */
+      #tweaks-fab {
+        position: fixed;
+        bottom: 24px;
+        right: 24px;
+        z-index: 2999;
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: #0f766e;
+        border: none;
+        color: #fff;
+        font-size: 18px;
+        cursor: pointer;
+        box-shadow: 0 4px 14px rgba(15,118,110,0.35);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: transform .2s, box-shadow .2s;
+      }
+      #tweaks-fab:hover { transform: scale(1.1); box-shadow: 0 8px 24px rgba(15,118,110,0.45); }
+      #tweaks-fab.panel-open { display: none; }
+
+      /* ── Page transition ── */
+      @keyframes pageFadeSlide {
+        from { opacity: 0; transform: translateY(10px); }
+        to   { opacity: 1; transform: translateY(0);    }
+      }
+      .page-transition { animation: pageFadeSlide .22s ease forwards; }
+
+      /* ── Success swoosh ── */
+      @keyframes swoosh {
+        0%   { transform: scale(0.4) rotate(-15deg); opacity: 0; }
+        60%  { transform: scale(1.12) rotate(4deg);  opacity: 1; }
+        100% { transform: scale(1) rotate(0deg);      opacity: 1; }
+      }
+      @keyframes successRing {
+        0%   { box-shadow: 0 0 0 0 rgba(22,163,74,0.5); }
+        70%  { box-shadow: 0 0 0 18px rgba(22,163,74,0); }
+        100% { box-shadow: 0 0 0 0 rgba(22,163,74,0);   }
+      }
+      .swoosh-icon { animation: swoosh .38s cubic-bezier(0.34,1.56,0.64,1) forwards; }
+      .success-ring { animation: successRing .6s ease .1s forwards; }
+
+      /* ── Button ripple ── */
+      @keyframes rippleOut {
+        to { transform: scale(2.8); opacity: 0; }
+      }
+      .btn-ripple { position: relative; overflow: hidden; }
+      .btn-ripple::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        background: rgba(255,255,255,0.28);
+        transform: scale(0);
+        transition: transform 0s;
+      }
+      .btn-ripple:active::after {
+        transform: scale(2.8);
+        opacity: 0;
+        transition: transform .4s ease, opacity .4s ease;
+      }
+
+      /* ── Mobile responsive ── */
+      @media (max-width: 768px) {
+        /* Nav */
+        .nav-links { display: none !important; }
+        .nav-actions { display: none !important; }
+        .nav-hamburger { display: flex !important; }
+        .mobile-menu {
+          position: fixed; top: 62px; left: 0; right: 0;
+          background: #fff; border-bottom: 1px solid #e2e8f0;
+          padding: 12px 16px; z-index: 999;
+          display: flex; flex-direction: column; gap: 4px;
+          box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+          animation: pageFadeSlide .18s ease;
+        }
+        .mobile-menu button {
+          width: 100%; text-align: left; padding: 10px 14px;
+          border-radius: 8px; border: none; background: transparent;
+          font-size: 14px; font-family: 'Inter',sans-serif; cursor: pointer;
+          color: #334155;
+        }
+        .mobile-menu button.active { background: #f0fdfa; color: #0f766e; font-weight: 600; }
+        .mobile-menu .mob-divider { height: 1px; background: #f1f5f9; margin: 4px 0; }
+        /* Stat grids */
+        .stats-grid { grid-template-columns: repeat(2,1fr) !important; }
+        /* Feature grids */
+        .feature-grid { grid-template-columns: 1fr !important; }
+        /* Dashboard grid */
+        .dash-main-grid { grid-template-columns: 1fr !important; }
+        .dash-kpi-grid { grid-template-columns: 1fr 1fr !important; }
+        /* Side layouts */
+        .side-layout { flex-direction: column !important; }
+        .side-layout aside { width: 100% !important; border-right: none !important; border-bottom: 1px solid #e2e8f0; }
+        /* Job cards */
+        .job-card-head { flex-direction: column !important; align-items: flex-start !important; }
+        /* Table / gov grid */
+        .gov-grid { grid-template-columns: 1fr !important; }
+        .kpi-grid  { grid-template-columns: repeat(2,1fr) !important; }
+        /* Hero text */
+        .hero-h1 { font-size: 36px !important; }
+        /* Pricing grid */
+        .pricing-grid { grid-template-columns: 1fr !important; }
+        /* How-it-works */
+        .how-grid { grid-template-columns: 1fr !important; }
+        /* Modal width */
+        .modal-inner { width: 96vw !important; padding: 24px 18px !important; }
+        /* General padding fix */
+        .page-pad { padding-left: 16px !important; padding-right: 16px !important; }
+      }
+      @media (max-width: 480px) {
+        .stats-grid { grid-template-columns: 1fr 1fr !important; }
+        .dash-kpi-grid { grid-template-columns: 1fr !important; }
+        .hero-h1 { font-size: 28px !important; }
       }
       .tw-head {
         padding: 14px 18px;
@@ -164,6 +281,9 @@
   </head>
   <body>
     <div id="root"></div>
+
+    <!-- Floating tweaks button -->
+    <button id="tweaks-fab" title="Tweaks">⚙</button>
 
     <!-- Tweaks panel (plain HTML, outside React) -->
     <div id="tweaks-panel">
@@ -724,104 +844,83 @@
           { id: "community", label: "Jamiyat" },
           { id: "gov", label: "Nazorat" },
         ];
+        const [mobileOpen, setMobileOpen] = React.useState(false);
+        const nav = (id) => { onNavigate(id); setMobileOpen(false); };
+
         return (
-          <nav
-            style={{
-              background: COLORS.white,
-              borderBottom: `1px solid ${COLORS.border}`,
-              padding: "0 32px",
-              height: 62,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              position: "sticky",
-              top: 0,
-              zIndex: 1000,
-              boxShadow: "0 1px 4px rgba(15,118,110,0.06)",
-              fontFamily: "'Inter',sans-serif",
-            }}
-          >
-            <Logo onClick={() => onNavigate("landing")} />
+          <React.Fragment>
+            <nav style={{
+              background: COLORS.white, borderBottom: `1px solid ${COLORS.border}`,
+              padding: "0 20px", height: 62, display: "flex", alignItems: "center",
+              justifyContent: "space-between", position: "sticky", top: 0, zIndex: 1000,
+              boxShadow: "0 1px 4px rgba(15,118,110,0.06)", fontFamily: "'Inter',sans-serif",
+            }}>
+              <Logo onClick={() => nav("landing")} />
 
-            <div style={{ display: "flex", gap: 2 }}>
-              {pages.map((p) => (
-                <button
-                  key={p.id}
-                  onClick={() => onNavigate(p.id)}
-                  style={{
-                    background:
-                      currentPage === p.id ? COLORS.tealBg : "transparent",
-                    color:
-                      currentPage === p.id ? COLORS.teal : COLORS.textMuted,
-                    border: "none",
-                    padding: "7px 14px",
-                    borderRadius: 8,
-                    cursor: "pointer",
-                    fontSize: 13.5,
-                    fontWeight: currentPage === p.id ? 600 : 400,
-                    fontFamily: "'Inter',sans-serif",
-                    transition: "all .15s",
-                  }}
-                >
-                  {p.label}
+              {/* Desktop links */}
+              <div className="nav-links" style={{ display: "flex", gap: 2 }}>
+                {pages.map((p) => (
+                  <button key={p.id} onClick={() => nav(p.id)} style={{
+                    background: currentPage === p.id ? COLORS.tealBg : "transparent",
+                    color: currentPage === p.id ? COLORS.teal : COLORS.textMuted,
+                    border: "none", padding: "7px 11px", borderRadius: 8, cursor: "pointer",
+                    fontSize: 13, fontWeight: currentPage === p.id ? 600 : 400,
+                    fontFamily: "'Inter',sans-serif", transition: "all .15s",
+                  }}>{p.label}</button>
+                ))}
+              </div>
+
+              {/* Desktop actions */}
+              <div className="nav-actions" style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                <button onClick={onReport} style={{
+                  display: "flex", alignItems: "center", gap: 6,
+                  background: COLORS.amberBg, border: `1px solid ${COLORS.amberBorder}`,
+                  color: COLORS.amber, padding: "7px 12px", borderRadius: 8,
+                  cursor: "pointer", fontSize: 13, fontWeight: 600, fontFamily: "'Inter',sans-serif",
+                }}><FlagIcon size={13} color={COLORS.amber}/> Shikoyat</button>
+                <button onClick={onLogin} style={{
+                  background: "transparent", border: `1px solid ${COLORS.border}`,
+                  color: COLORS.textMid, padding: "7px 14px", borderRadius: 8,
+                  cursor: "pointer", fontSize: 13.5, fontWeight: 500, fontFamily: "'Inter',sans-serif",
+                }}>Kirish</button>
+                <button onClick={onRegister} style={{
+                  background: COLORS.teal, border: "none", color: COLORS.white,
+                  padding: "7px 14px", borderRadius: 8, cursor: "pointer",
+                  fontSize: 13.5, fontWeight: 600, fontFamily: "'Inter',sans-serif",
+                }}>Ro'yxatdan o'tish</button>
+              </div>
+
+              {/* Hamburger */}
+              <button className="nav-hamburger" onClick={() => setMobileOpen(o=>!o)} style={{
+                display: "none", background: "transparent", border: "none",
+                padding: 8, borderRadius: 8, cursor: "pointer", flexDirection: "column",
+                gap: 5, alignItems: "center", justifyContent: "center",
+              }}>
+                <span style={{ display:"block", width:22, height:2, background: mobileOpen ? COLORS.teal : COLORS.textMid, borderRadius:2, transition:"all .2s", transform: mobileOpen ? "rotate(45deg) translate(5px,5px)" : "none" }}/>
+                <span style={{ display:"block", width:22, height:2, background: mobileOpen ? "transparent" : COLORS.textMid, borderRadius:2, transition:"all .2s" }}/>
+                <span style={{ display:"block", width:22, height:2, background: mobileOpen ? COLORS.teal : COLORS.textMid, borderRadius:2, transition:"all .2s", transform: mobileOpen ? "rotate(-45deg) translate(5px,-5px)" : "none" }}/>
+              </button>
+            </nav>
+
+            {/* Mobile drawer */}
+            {mobileOpen && (
+              <div className="mobile-menu">
+                {pages.map(p => (
+                  <button key={p.id} onClick={()=>nav(p.id)} className={currentPage===p.id?"active":""}>
+                    {p.label}
+                  </button>
+                ))}
+                <div className="mob-divider"/>
+                <button onClick={()=>{onReport();setMobileOpen(false);}} style={{ color: COLORS.amber, fontWeight:600 }}>
+                  🚩 Shikoyat yuborish
                 </button>
-              ))}
-            </div>
-
-            <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-              <button
-                onClick={onReport}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 6,
-                  background: COLORS.amberBg,
-                  border: `1px solid ${COLORS.amberBorder}`,
-                  color: COLORS.amber,
-                  padding: "7px 14px",
-                  borderRadius: 8,
-                  cursor: "pointer",
-                  fontSize: 13,
-                  fontWeight: 600,
-                  fontFamily: "'Inter',sans-serif",
-                }}
-              >
-                <FlagIcon size={13} color={COLORS.amber} /> Shikoyat
-              </button>
-              <button
-                onClick={onLogin}
-                style={{
-                  background: "transparent",
-                  border: `1px solid ${COLORS.border}`,
-                  color: COLORS.textMid,
-                  padding: "7px 16px",
-                  borderRadius: 8,
-                  cursor: "pointer",
-                  fontSize: 13.5,
-                  fontWeight: 500,
-                  fontFamily: "'Inter',sans-serif",
-                }}
-              >
-                Kirish
-              </button>
-              <button
-                onClick={onRegister}
-                style={{
-                  background: COLORS.teal,
-                  border: "none",
-                  color: COLORS.white,
-                  padding: "7px 16px",
-                  borderRadius: 8,
-                  cursor: "pointer",
-                  fontSize: 13.5,
-                  fontWeight: 600,
-                  fontFamily: "'Inter',sans-serif",
-                }}
-              >
-                Ro'yxatdan o'tish
-              </button>
-            </div>
-          </nav>
+                <button onClick={()=>{onLogin();setMobileOpen(false);}}>Kirish</button>
+                <button onClick={()=>{onRegister();setMobileOpen(false);}} style={{ color: COLORS.teal, fontWeight:600 }}>
+                  Ro'yxatdan o'tish
+                </button>
+              </div>
+            )}
+          </React.Fragment>
         );
       }
 
@@ -1907,6 +2006,7 @@
                 <>
                   <div style={{ textAlign: "center", marginBottom: 32 }}>
                     <div
+                      className="success-ring"
                       style={{
                         width: 80,
                         height: 80,
@@ -1919,6 +2019,7 @@
                       }}
                     >
                       <svg
+                        className="swoosh-icon"
                         width="40"
                         height="40"
                         viewBox="0 0 40 40"
@@ -2078,6 +2179,7 @@
         ];
         return (
           <div
+            className="stats-grid"
             style={{
               background: COLORS.tealDark,
               padding: "22px 32px",
@@ -2265,6 +2367,7 @@
                   O'zbekiston Mehnat Shaffofligi Platformasi
                 </div>
                 <h1
+                  className="hero-h1"
                   style={{
                     margin: "0 0 8px",
                     fontSize: 58,
@@ -2411,6 +2514,7 @@
                 </p>
               </div>
               <div
+                className="feature-grid"
                 style={{
                   display: "grid",
                   gridTemplateColumns: "repeat(3,1fr)",
@@ -2450,6 +2554,7 @@
                   Qanday ishlaydi?
                 </h2>
                 <div
+                  className="how-grid"
                   style={{
                     display: "grid",
                     gridTemplateColumns: "repeat(3,1fr)",
@@ -8685,7 +8790,7 @@
               onLogin={() => setAuthModal("chooser")}
               onRegister={() => setAuthModal("seeker")}
             />
-            <div style={{ animation: "fadeIn .18s ease" }} key={page}>
+            <div className="page-transition" key={page}>
               {page === "landing" && (
                 <LandingPage
                   onNavigate={setPage}
@@ -8738,17 +8843,29 @@
     <script>
       // ── Tweaks panel wiring ───────────────────────────────────────────────
       const panel = document.getElementById("tweaks-panel");
+      const fab   = document.getElementById("tweaks-fab");
+
+      // FAB click → open panel
+      fab.addEventListener("click", () => {
+        panel.classList.add("visible");
+        fab.classList.add("panel-open");
+      });
 
       window.addEventListener("message", (e) => {
-        if (e.data?.type === "__activate_edit_mode")
+        if (e.data?.type === "__activate_edit_mode") {
           panel.classList.add("visible");
-        if (e.data?.type === "__deactivate_edit_mode")
+          fab.classList.add("panel-open");
+        }
+        if (e.data?.type === "__deactivate_edit_mode") {
           panel.classList.remove("visible");
+          fab.classList.remove("panel-open");
+        }
       });
       window.parent.postMessage({ type: "__edit_mode_available" }, "*");
 
       document.getElementById("tw-close").addEventListener("click", () => {
         panel.classList.remove("visible");
+        fab.classList.remove("panel-open");
         window.parent.postMessage({ type: "__edit_mode_dismissed" }, "*");
       });
 
