@@ -1,5 +1,0 @@
-{
-  "routes": [
-    { "src": "/", "dest": "/trustflow_design/trustflow/TrustFlow.html" }
-  ]
-}
